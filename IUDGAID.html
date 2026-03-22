@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E Minor</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  min-height:100vh; background:#1A1714; color:#F5F0EB;
+  font-family:'Source Sans 3','Source Sans Pro',sans-serif;
+  padding:0 0 60px;
+}
+.mono { font-family:'JetBrains Mono',monospace; }
+.serif { font-family:'Instrument Serif',serif; }
+header {
+  padding:28px 24px 20px;
+  border-bottom:1px solid rgba(90,82,73,0.3);
+  background:linear-gradient(180deg,rgba(42,37,32,0.8) 0%,transparent 100%);
+}
+header h1 { font-size:26px; font-weight:400; letter-spacing:1px; color:#D4956A; }
+header h1 span { font-family:'Instrument Serif',serif; }
+header p { font-size:12px; color:#6A5E52; margin-top:4px; letter-spacing:0.5px; }
+.input-area { padding:16px 24px 0; }
+.chord-input {
+  width:100%; background:rgba(42,37,32,0.8);
+  border:1px solid rgba(90,82,73,0.4); border-radius:8px;
+  padding:12px 14px; color:#F5F0EB; font-size:16px;
+  font-family:'JetBrains Mono',monospace; outline:none;
+  transition:border-color 0.15s;
+}
+.chord-input:focus { border-color:rgba(212,149,106,0.5); }
+.chord-input.error { border-color:#8B4A3A; }
+.error-msg {
+  font-size:12px; color:#C47A4A; margin-top:6px;
+  font-family:'JetBrains Mono',monospace;
+  font-style:italic; opacity:0;
+  transition:opacity 0.2s;
+}
+.error-msg.show { opacity:1; }
+.tabs {
+  padding:16px 24px 12px; display:flex; gap:4px;
+}
+.tab {
+  background:transparent; border:1px solid rgba(90,82,73,0.15);
+  border-radius:6px; padding:6px 14px; color:#6A5E52;
+  font-size:12px; cursor:pointer; font-family:'Source Sans 3',sans-serif;
+  transition:all 0.15s; text-transform:capitalize;
+}
+.tab.active {
+  background:rgba(212,149,106,0.15); border-color:rgba(212,149,106,0.3);
+  color:#D4956A; font-weight:600;
+}
+.content { padding:0 24px; }
+.chord-grid {
+  display:grid; gap:12px;
+  grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+}
+.card {
+  background:rgba(42,37,32,0.6); border-radius:10px; padding:14px;
+  border:1px solid rgba(90,82,73,0.3);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.card-title {
+  font-size:16px; font-weight:700; color:#F5F0EB;
+  font-family:'Instrument Serif',serif; letter-spacing:0.5px;
+}
+.nav { display:flex; align-items:center; gap:8px; }
+.nav-btn {
+  background:none; border:none; color:#8A7E72; cursor:pointer;
+  font-size:16px; padding:2px 6px;
+}
+.nav-btn:disabled { color:#3A3530; cursor:default; }
+.nav-label {
+  font-size:10px; color:#8A7E72; min-width:60px; text-align:center;
+  font-family:'JetBrains Mono',monospace;
+}
+.note-info {
+  font-size:9px; color:#6A5E52; font-family:'JetBrains Mono',monospace;
+}
+.btns { display:flex; gap:6px; }
+.play-btn {
+  background:rgba(212,149,106,0.12); color:#D4956A;
+  border:1px solid rgba(212,149,106,0.25); border-radius:6px;
+  padding:4px 10px; cursor:pointer; font-size:11px;
+  font-family:'JetBrains Mono',monospace; font-weight:600;
+  transition:all 0.15s;
+}
+.play-btn:active { background:#C47A4A; color:#1A1714; }
+.play-all {
+  background:rgba(212,149,106,0.12); border:1px solid rgba(212,149,106,0.25);
+  border-radius:8px; padding:8px 18px; color:#D4956A;
+  font-size:12px; cursor:pointer; font-family:'JetBrains Mono',monospace;
+  font-weight:600; transition:all 0.15s; margin-top:16px;
+}
+.play-all:active { background:#C47A4A; color:#1A1714; }
+.prog-label {
+  font-size:13px; color:#8A7E72; margin-bottom:12px;
+  font-family:'JetBrains Mono',monospace;
+}
+.interval-grid {
+  display:grid; gap:6px; margin-bottom:16px;
+}
+.interval-cell {
+  background:rgba(90,82,73,0.2); border-radius:6px; padding:8px 4px;
+  text-align:center; border:1px solid rgba(90,82,73,0.2);
+}
+.interval-cell.root {
+  background:rgba(212,149,106,0.15); border-color:rgba(212,149,106,0.3);
+}
+.interval-note { font-size:15px; font-weight:700; color:#F5F0EB; font-family:'JetBrains Mono',monospace; }
+.interval-name { font-size:10px; color:#D4956A; margin-top:2px; font-family:'JetBrains Mono',monospace; }
+.interval-semi { font-size:9px; color:#6A5E52; margin-top:1px; }
+.section-title {
+  font-size:14px; font-weight:700; color:#D4956A; margin-bottom:8px;
+  font-family:'Instrument Serif',serif;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span>E Minor</span></h1>
+  <p>Em — Am — C — G — D — Bm — B7</p>
+</header>
+
+<div class="input-area">
+  <input type="text" class="chord-input" id="chord-input"
+         placeholder="type a chord... Em, Am, C, G, D, Bm, B7"
+         oninput="handleInput(this)">
+  <div class="error-msg" id="error-msg">please play correctly — E minor only</div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+<div class="content" id="content"></div>
+
+<script>
+// ============================================================
+// MUSIC THEORY
+// ============================================================
+const NOTE_SEMI = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const SHARPS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLATS = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+
+const FORMULAS = {
+  maj:[0,4,7], min:[0,3,7], m:[0,3,7], dim:[0,3,6], aug:[0,4,8],
+  sus2:[0,2,7], sus4:[0,5,7],
+  '7':[0,4,7,10], maj7:[0,4,7,11], M7:[0,4,7,11],
+  m7:[0,3,7,10], min7:[0,3,7,10], dim7:[0,3,6,9],
+  m7b5:[0,3,6,10], '9':[0,4,7,10,14], m9:[0,3,7,10,14],
+  add9:[0,4,7,14], '5':[0,7],
+};
+const LABELS = {
+  maj:['R','M3','P5'], min:['R','m3','P5'], m:['R','m3','P5'],
+  dim:['R','m3','b5'], aug:['R','M3','#5'],
+  sus2:['R','M2','P5'], sus4:['R','P4','P5'],
+  '7':['R','M3','P5','b7'], maj7:['R','M3','P5','M7'], M7:['R','M3','P5','M7'],
+  m7:['R','m3','P5','b7'], min7:['R','m3','P5','b7'],
+  dim7:['R','m3','b5','bb7'], m7b5:['R','m3','b5','b7'],
+  '9':['R','M3','P5','b7','9'], m9:['R','m3','P5','b7','9'],
+  add9:['R','M3','P5','9'], '5':['R','P5'],
+};
+
+function nToS(n) { let s = NOTE_SEMI[n[0].toUpperCase()]||0; for(let i=1;i<n.length;i++){if(n[i]==='#')s++;else if(n[i]==='b')s--;} return((s%12)+12)%12; }
+function sToN(s,flat) { return(flat?FLATS:SHARPS)[((s%12)+12)%12]; }
+
+function parseChord(sym) {
+  sym = sym.trim().replace(/[()]/g,'');
+  if(!sym) return null;
+  let bass=null, main=sym;
+  if(sym.includes('/')){const[a,b]=sym.split('/',2);if(/^[A-Ga-g]/.test(b)){main=a;bass=b;}else main=a+b;}
+  const mt = main.match(/^([A-Ga-g])([#b]*)/);
+  if(!mt) return null;
+  const root = mt[1].toUpperCase()+mt[2];
+  let rem = main.slice(mt[0].length);
+  let q = null;
+  if(!rem) q = 'maj';
+  else {
+    const aliases = {major:'maj',minor:'m',mi:'m','-':'m','Maj7':'maj7','Min7':'m7'};
+    if(aliases[rem]) rem = aliases[rem];
+    if(rem==='o'||rem==='°') q='dim';
+    else if(rem==='o7'||rem==='°7') q='dim7';
+    else if(rem==='ø'||rem==='ø7') q='m7b5';
+    else {
+      const ks = Object.keys(FORMULAS).sort((a,b)=>b.length-a.length);
+      for(const k of ks){ if(rem===k){q=k;break;} if(rem.toLowerCase()===k.toLowerCase()&&k!=='m'&&k!=='M7'){q=k;break;} }
+      if(!q && rem.startsWith('-')){ const sub=rem.slice(1); if(!sub)q='m'; else if(FORMULAS['m'+sub])q='m'+sub; }
+      if(!q && rem.toLowerCase().startsWith('min')){ const sub=rem.slice(3); if(!sub)q='m'; else if(FORMULAS['m'+sub])q='m'+sub; }
+      if(!q && rem.toLowerCase().startsWith('maj')){ const sub=rem.slice(3); if(!sub)q='maj'; else if(FORMULAS['maj'+sub])q='maj'+sub; }
+    }
+  }
+  if(!q || !FORMULAS[q]) return null;
+  const rs = nToS(root);
+  const flat = root.includes('b')||['F','D','G','C'].includes(root);
+  const ivs = FORMULAS[q];
+  const labs = LABELS[q]||ivs.map((_,i)=>i===0?'R':'?');
+  const notes = ivs.map(iv=>sToN((rs+iv)%12,flat));
+  return {symbol:sym, root, rootSemi:rs, quality:q, bass, intervals:ivs, labels:labs, notes, flats:flat};
+}
+
+// ============================================================
+// E MINOR DIATONIC CHORDS
+// ============================================================
+const EM_CHORDS = [
+  {sym:'Em', roman:'i'},
+  {sym:'Am', roman:'iv'},
+  {sym:'C', roman:'VI'},
+  {sym:'G', roman:'III'},
+  {sym:'D', roman:'VII'},
+  {sym:'Bm', roman:'v'},
+  {sym:'B7', roman:'V7'},
+];
+
+const EM_PARSED = EM_CHORDS.map(c => ({...c, chord: parseChord(c.sym)})).filter(c => c.chord);
+
+// ============================================================
+// KEYBOARD VOICINGS
+// ============================================================
+function getKbVoicings(chord, base=4) {
+  const vs = [];
+  const {rootSemi:rs, intervals:ivs, flats:fl} = chord;
+  for(let inv=0; inv<ivs.length && inv<4; inv++){
+    const notes = [];
+    let prev = -1;
+    for(let i=0;i<ivs.length;i++){
+      const idx = (i+inv)%ivs.length;
+      const octShift = (i+inv)>=ivs.length ? 1 : 0;
+      const abs = rs + ivs[idx];
+      let midi = abs + base*12 + 12 + octShift*12;
+      if(midi <= prev) midi += 12;
+      notes.push({note:sToN(abs%12,fl), octave:Math.floor((midi-12)/12), midi});
+      prev = midi;
+    }
+    notes.sort((a,b)=>a.midi-b.midi);
+    vs.push({label: inv===0?'Root':`Inv ${inv}`, notes});
+  }
+  return vs;
+}
+
+// ============================================================
+// GUITAR VOICINGS
+// ============================================================
+const TUN_S = [4,9,2,7,11,4];
+const TUN_M = [40,45,50,55,59,64];
+const STR_N = ['E','A','D','G','B','e'];
+
+function getGtrVoicings(chord, maxV=6) {
+  const {rootSemi:rs, intervals:ivs, bass} = chord;
+  const csems = new Set(ivs.map(iv=>(rs+iv)%12));
+  const bSem = bass ? nToS(bass) : rs;
+  const cands = [];
+  for(let r=0;r<3;r++){
+    const rf = ((bSem-TUN_S[r])%12+12)%12;
+    for(const bf of [rf, rf<=2?rf+12:-1]){
+      if(bf<0||bf>12) continue;
+      const v = [-1,-1,-1,-1,-1,-1]; v[r]=bf;
+      for(let s=r+1;s<6;s++){
+        let bF=-1, bD=99;
+        for(let f=Math.max(0,bf-1);f<=bf+4;f++){
+          if(csems.has((TUN_S[s]+f)%12)){const d=Math.abs(f-bf);if(d<bD){bD=d;bF=f;}}
+        }
+        v[s]=bF;
+      }
+      for(let s=0;s<6;s++) if(v[s]>=0&&!csems.has((TUN_S[s]+v[s])%12)) v[s]=-1;
+      const fr=v.filter(f=>f>0);
+      if(!fr.length) continue;
+      if(Math.max(...fr)-Math.min(...fr)>4) continue;
+      const pl=new Set(); v.forEach((f,s)=>{if(f>=0)pl.add((TUN_S[s]+f)%12);});
+      const cov=[...pl].filter(p=>csems.has(p)).length;
+      const ns=v.filter(f=>f>=0).length;
+      if(cov<2||ns<3) continue;
+      const hasR=v.some((f,s)=>f>=0&&(TUN_S[s]+f)%12===rs);
+      const sc=cov*15+ns*2-(Math.max(...fr)-Math.min(...fr))*2+(hasR?8:0)-bf;
+      const k=v.join(',');
+      if(!cands.some(c=>c.k===k)) cands.push({sc,v:[...v],k});
+    }
+  }
+  cands.sort((a,b)=>b.sc-a.sc);
+  const res = cands.slice(0,maxV).map(c=>c.v);
+  return res.length ? res : [[-1,-1,-1,-1,-1,-1]];
+}
+
+function vToMidi(v) { return v.map((f,s)=>f>=0?TUN_M[s]+f:-1).filter(m=>m>=0); }
+
+// ============================================================
+// AUDIO
+// ============================================================
+function playMidi(notes, strum) {
+  const AC = window.AudioContext||window.webkitAudioContext;
+  const ctx = new AC();
+  const g = 0.22/Math.max(notes.length,1);
+  const sd = strum ? 0.045 : 0;
+  notes.forEach((midi,i) => {
+    const freq = 440*Math.pow(2,(midi-69)/12);
+    const t = ctx.currentTime + i*sd;
+    const o1=ctx.createOscillator(), o2=ctx.createOscillator(), gn=ctx.createGain();
+    o1.type='triangle'; o2.type='sine';
+    o1.frequency.value=freq; o2.frequency.value=freq*2;
+    o1.connect(gn); o2.connect(gn); gn.connect(ctx.destination);
+    gn.gain.setValueAtTime(0,t);
+    gn.gain.linearRampToValueAtTime(g,t+0.015);
+    gn.gain.linearRampToValueAtTime(g*0.6,t+0.2);
+    gn.gain.setValueAtTime(g*0.6,t+0.9);
+    gn.gain.linearRampToValueAtTime(0,t+2.0);
+    const gn2=ctx.createGain();
+    o2.disconnect(); o2.connect(gn2); gn2.connect(ctx.destination);
+    gn2.gain.setValueAtTime(0,t);
+    gn2.gain.linearRampToValueAtTime(g*0.12,t+0.015);
+    gn2.gain.linearRampToValueAtTime(0,t+1.2);
+    o1.start(t); o2.start(t); o1.stop(t+2.2); o2.stop(t+1.5);
+  });
+}
+
+// ============================================================
+// SVG RENDERERS
+// ============================================================
+function pianoSVG(midiNotes, w=280) {
+  const octs=3, startOct=3;
+  const wk=[0,2,4,5,7,9,11], bk={1:0.65,3:1.75,6:3.7,8:4.75,10:5.8};
+  const wW=w/(octs*7), bW=wW*0.6, h=80, bH=h*0.6;
+  const hl=new Set(midiNotes);
+  let svg=`<svg width="${w}" height="${h+4}" viewBox="0 0 ${w} ${h+4}" style="display:block">`;
+  // whites
+  for(let o=0;o<octs;o++) wk.forEach((semi,i)=>{
+    const midi=(startOct+o)*12+12+semi;
+    const x=(o*7+i)*wW;
+    const hit=hl.has(midi);
+    svg+=`<rect x="${x}" y="0" width="${wW-1}" height="${h}" fill="${hit?'#D4956A':'#F5F0EB'}" stroke="#3A3530" stroke-width="0.5" rx="1"/>`;
+    if(hit) svg+=`<text x="${x+wW/2}" y="${h-6}" text-anchor="middle" fill="#1A1714" font-size="8" font-weight="600" font-family="'JetBrains Mono',monospace">${sToN(semi)}</text>`;
+  });
+  // blacks
+  for(let o=0;o<octs;o++) Object.entries(bk).forEach(([semi,pos])=>{
+    const midi=(startOct+o)*12+12+Number(semi);
+    const x=(o*7+pos)*wW-bW/2;
+    const hit=hl.has(midi);
+    svg+=`<rect x="${x}" y="0" width="${bW}" height="${bH}" fill="${hit?'#C47A4A':'#2A2520'}" stroke="#1A1714" stroke-width="0.5" rx="1"/>`;
+    if(hit) svg+=`<text x="${x+bW/2}" y="${bH-5}" text-anchor="middle" fill="#F5F0EB" font-size="7" font-weight="600" font-family="'JetBrains Mono',monospace">${sToN(Number(semi))}</text>`;
+  });
+  return svg+'</svg>';
+}
+
+function fretSVG(voicing, w=150) {
+  const nF=5;
+  const fr=voicing.filter(f=>f>0);
+  const mn=fr.length?Math.min(...fr):1;
+  const sF=mn<=2?1:mn;
+  const pL=26,pR=10,pT=18,pB=14;
+  const fw=w-pL-pR, fh=120;
+  const sG=fw/5, fG=fh/nF;
+  const h=fh+pT+pB;
+  let svg=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block">`;
+  // fret number
+  if(sF>1) svg+=`<text x="${pL-6}" y="${pT+fG/2+4}" text-anchor="end" fill="#8A7E72" font-size="9" font-family="'JetBrains Mono',monospace">${sF}</text>`;
+  // nut
+  if(sF===1) svg+=`<line x1="${pL}" y1="${pT}" x2="${pL+fw}" y2="${pT}" stroke="#D4956A" stroke-width="3"/>`;
+  // frets
+  for(let i=0;i<=nF;i++){const y=pT+i*fG; svg+=`<line x1="${pL}" y1="${y}" x2="${pL+fw}" y2="${y}" stroke="#5A5249" stroke-width="0.8"/>`;}
+  // strings
+  for(let s=0;s<6;s++){const x=pL+s*sG; svg+=`<line x1="${x}" y1="${pT}" x2="${x}" y2="${pT+fh}" stroke="#8A7E72" stroke-width="${s<3?1.2:0.8}"/>`;}
+  // dots
+  voicing.forEach((f,s)=>{
+    const x=pL+s*sG;
+    if(f<0) svg+=`<text x="${x}" y="${pT-5}" text-anchor="middle" fill="#6A5E52" font-size="10">×</text>`;
+    else if(f===0) svg+=`<circle cx="${x}" cy="${pT-6}" r="4" fill="none" stroke="#D4956A" stroke-width="1.2"/>`;
+    else{
+      const y=pT+(f-sF+0.5)*fG;
+      if(y>=pT&&y<=pT+fh){
+        svg+=`<circle cx="${x}" cy="${y}" r="7" fill="#D4956A"/>`;
+        svg+=`<text x="${x}" y="${y+3.5}" text-anchor="middle" fill="#1A1714" font-size="8" font-weight="700" font-family="'JetBrains Mono',monospace">${f}</text>`;
+      }
+    }
+  });
+  // string labels
+  STR_N.forEach((n,s)=>{ svg+=`<text x="${pL+s*sG}" y="${h-2}" text-anchor="middle" fill="#6A5E52" font-size="7" font-family="'JetBrains Mono',monospace">${n}</text>`; });
+  return svg+'</svg>';
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let currentView = 'keyboard';
+const cardState = {}; // per-card voicing index
+
+function getCardKey(sym, i) { return sym+'_'+i; }
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderTabs() {
+  const tabs = document.getElementById('tabs');
+  const views = ['keyboard','guitar','intervals'];
+  tabs.innerHTML = views.map(v =>
+    `<button class="tab ${v===currentView?'active':''}" onclick="switchView('${v}')">${v}</button>`
+  ).join('');
+}
+
+function switchView(v) {
+  currentView = v;
+  renderTabs();
+  renderContent();
+}
+
+function navVoicing(key, dir, total) {
+  const cur = cardState[key]||0;
+  const next = Math.max(0, Math.min(total-1, cur+dir));
+  cardState[key] = next;
+  renderContent();
+}
+
+function renderCard(chordData, index) {
+  const {sym, roman, chord} = chordData;
+  const key = getCardKey(sym, index);
+  const idx = cardState[key]||0;
+
+  if(currentView === 'keyboard') {
+    const vs = getKbVoicings(chord);
+    const ci = Math.min(idx, vs.length-1);
+    const cur = vs[ci];
+    const midi = cur.notes.map(n=>n.midi);
+    const info = cur.notes.map(n=>n.note+n.octave).join('  ');
+    return `<div class="card">
+      <div class="card-title">${sym} <span style="font-size:11px;color:#6A5E52;font-family:'JetBrains Mono',monospace">${roman}</span></div>
+      <div class="nav">
+        <button class="nav-btn" ${ci===0?'disabled':''} onclick="navVoicing('${key}',-1,${vs.length})">◂</button>
+        <span class="nav-label">${cur.label}</span>
+        <button class="nav-btn" ${ci>=vs.length-1?'disabled':''} onclick="navVoicing('${key}',1,${vs.length})">▸</button>
+      </div>
+      ${pianoSVG(midi)}
+      <div class="note-info">${info}</div>
+      <div class="btns"><button class="play-btn" onclick="playMidi([${midi}],false)">Play</button></div>
+    </div>`;
+  }
+
+  if(currentView === 'guitar') {
+    const vs = getGtrVoicings(chord);
+    const ci = Math.min(idx, vs.length-1);
+    const cur = vs[ci];
+    const midi = vToMidi(cur);
+    const info = cur.map(f=>f<0?'x':f).join(' · ');
+    return `<div class="card">
+      <div class="card-title">${sym} <span style="font-size:11px;color:#6A5E52;font-family:'JetBrains Mono',monospace">${roman}</span></div>
+      <div class="nav">
+        <button class="nav-btn" ${ci===0?'disabled':''} onclick="navVoicing('${key}',-1,${vs.length})">◂</button>
+        <span class="nav-label">Voicing ${ci+1}</span>
+        <button class="nav-btn" ${ci>=vs.length-1?'disabled':''} onclick="navVoicing('${key}',1,${vs.length})">▸</button>
+      </div>
+      ${fretSVG(cur)}
+      <div class="note-info">${info}</div>
+      <div class="btns">
+        <button class="play-btn" onclick="playMidi([${midi}],false)">Play</button>
+        <button class="play-btn" onclick="playMidi([${midi}],true)">Strum</button>
+      </div>
+    </div>`;
+  }
+
+  if(currentView === 'intervals') {
+    const {intervals:ivs, labels, notes} = chord;
+    const cols = ivs.length;
+    return `<div class="card" style="align-items:stretch">
+      <div class="card-title" style="text-align:center">${sym} <span style="font-size:11px;color:#6A5E52;font-family:'JetBrains Mono',monospace">${roman}</span></div>
+      <div class="interval-grid" style="grid-template-columns:repeat(${cols},1fr)">
+        ${ivs.map((iv,i) => `<div class="interval-cell ${i===0?'root':''}">
+          <div class="interval-note">${notes[i]}</div>
+          <div class="interval-name">${labels[i]}</div>
+          <div class="interval-semi">${iv}st</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+}
+
+function renderContent() {
+  const el = document.getElementById('content');
+
+  let html = `<div class="prog-label">${EM_PARSED.map(c=>c.sym).join(' — ')}</div>`;
+  html += `<div class="chord-grid">${EM_PARSED.map((c,i) => renderCard(c,i)).join('')}</div>`;
+
+  if(currentView !== 'intervals') {
+    html += `<button class="play-all" onclick="playProgression()">▶ Play All</button>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function playProgression() {
+  EM_PARSED.forEach((c,i) => {
+    setTimeout(() => {
+      if(currentView === 'keyboard') {
+        const vs = getKbVoicings(c.chord);
+        const idx = cardState[getCardKey(c.sym,i)]||0;
+        playMidi(vs[Math.min(idx,vs.length-1)].notes.map(n=>n.midi), false);
+      } else {
+        const vs = getGtrVoicings(c.chord);
+        const idx = cardState[getCardKey(c.sym,i)]||0;
+        playMidi(vToMidi(vs[Math.min(idx,vs.length-1)]), true);
+      }
+    }, i*1600);
+  });
+}
+
+// ============================================================
+// INPUT HANDLER
+// ============================================================
+const EM_VALID = new Set(['em','am','c','g','d','bm','b7',
+  'em7','am7','cmaj7','gmaj7','d7','bm7','b7',
+  'emin','amin','cmin','dmin','bmin',
+  'e minor','a minor']);
+
+function normalizeChord(s) {
+  return s.trim().toLowerCase().replace(/\s+/g,'');
+}
+
+function handleInput(el) {
+  const val = el.value.trim();
+  const err = document.getElementById('error-msg');
+
+  if(!val) {
+    el.classList.remove('error');
+    err.classList.remove('show');
+    // Reset to full diatonic set
+    filteredChords = null;
+    renderContent();
+    return;
+  }
+
+  // Split by separators to allow progressions too
+  const syms = val.split(/[|,\-\s]+/).map(s=>s.trim()).filter(Boolean);
+  const allValid = syms.every(s => {
+    const n = normalizeChord(s);
+    // Check against valid set and also try parsing
+    if(EM_VALID.has(n)) return true;
+    const parsed = parseChord(s);
+    if(!parsed) return false;
+    return EM_CHORDS.some(c => c.sym.toLowerCase() === parsed.symbol.toLowerCase()
+      || c.sym.toLowerCase() === (parsed.root + (parsed.quality==='maj'?'':parsed.quality)).toLowerCase());
+  });
+
+  if(allValid && syms.length > 0) {
+    el.classList.remove('error');
+    err.classList.remove('show');
+    // Filter to matched chords
+    filteredChords = syms.map(s => {
+      const p = parseChord(s);
+      if(!p) return null;
+      const match = EM_PARSED.find(c =>
+        c.chord.rootSemi === p.rootSemi &&
+        (c.chord.quality === p.quality || (c.chord.quality === 'min' && p.quality === 'm') || (c.chord.quality === 'm' && p.quality === 'min'))
+      );
+      return match || null;
+    }).filter(Boolean);
+    renderContent();
+  } else {
+    el.classList.add('error');
+    err.classList.add('show');
+  }
+}
+
+let filteredChords = null;
+
+// ============================================================
+// INIT
+// ============================================================
+renderTabs();
+renderContent();
+</script>
+</body>
+</html>
